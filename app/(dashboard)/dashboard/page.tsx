@@ -4,10 +4,11 @@ import { prisma } from '@/lib/db'
 import { SubscriptionBanner } from '@/components/layout/SubscriptionBanner'
 import { BookOpen, Trophy, Clock, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { UpgradeToast } from '@/components/layout/UpgradeToast'
 
 export const metadata = { title: 'Inicio' }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: { upgraded?: string } }) {
   const session = await getServerSession(authOptions)!
 
   const [progress, courses] = await Promise.all([
@@ -32,6 +33,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <SubscriptionBanner />
+      {searchParams.upgraded === '1' && <UpgradeToast />}
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-tx">Hola, {session!.user.name?.split(' ')[0]} 👋</h1>

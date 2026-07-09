@@ -1,6 +1,6 @@
 'use client'
-import { useState, useRef } from 'react'
-import { Loader2, Sparkles, Camera, X, CheckCircle2 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Loader2, Sparkles, Camera, X, CheckCircle2, Zap } from 'lucide-react'
 import { MathRenderer } from './MathRenderer'
 
 interface Step {
@@ -24,7 +24,14 @@ export function AISolverForm() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SolverResult | null>(null)
   const [error, setError] = useState('')
+  const [usage, setUsage] = useState<{ used: number; limit: number; plan: string } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/usage').then(r => r.json()).then(d => {
+      if (!d.error) setUsage({ used: d.used, limit: d.limit, plan: d.plan })
+    }).catch(() => {})
+  }, [])
 
   function handleFile(file: File) {
     if (!file.type.startsWith('image/')) return
@@ -67,8 +74,12 @@ export function AISolverForm() {
     const data = await res.json()
     setLoading(false)
 
-    if (!res.ok || data.error) setError(data.error ?? 'Error desconocido.')
-    else setResult(data)
+    if (!res.ok || data.error) {
+      setError(data.error ?? 'Error desconocido.')
+    } else {
+      setResult(data)
+      if (data.used !== undefined) setUsage(u => u ? { ...u, used: data.used } : u)
+    }
   }
 
   function clear() {
@@ -78,8 +89,29 @@ export function AISolverForm() {
     setError('')
   }
 
+  const usagePct = usage ? Math.min(100, Math.round((usage.used / usage.limit) * 100)) : 0
+
   return (
     <div className="max-w-3xl mx-auto space-y-5">
+      {/* Usage mini-bar */}
+      {usage && (
+        <div className="bg-bg-surface border border-bg-border rounded-xl px-4 py-3 flex items-center gap-3">
+          <Zap size={14} className={usagePct >= 90 ? 'text-danger' : usagePct >= 70 ? 'text-warning' : 'text-primary'} />
+          <div className="flex-1">
+            <div className="w-full h-1.5 bg-bg-elevated rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${usagePct >= 90 ? 'bg-danger' : usagePct >= 70 ? 'bg-warning' : 'bg-primary'}`}
+                style={{ width: `${usagePct}%` }}
+              />
+            </div>
+          </div>
+          <span className="text-xs text-tx-muted shrink-0">
+            {usage.used}/{usage.limit} hoy
+            {usage.plan === 'FREE' && <a href="/precios" className="text-primary ml-1.5 hover:underline">+ Premium</a>}
+          </span>
+        </div>
+      )}
+
       {/* Input */}
       <div className="bg-bg-surface border border-bg-border rounded-2xl p-6 space-y-4">
         <textarea

@@ -44,16 +44,29 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
+        // Fresh login — bake the plan into the token
         token.id = user.id
         token.plan = (user as any).plan ?? 'FREE'
+        token.planRefreshedAt = Date.now()
       }
-      if (trigger === 'update') {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          include: { subscription: true },
-        })
-        if (dbUser) token.plan = dbUser.subscription?.plan ?? 'FREE'
+
+      // Re-fetch plan from DB when:
+      // 1. Client calls session.update() (e.g. after Stripe redirect)
+      // 2. Plan data is older than 60 seconds (keeps it fresh after webhooks)
+      const stale = !token.planRefreshedAt || (Date.now() - (token.planRefreshedAt as number)) > 60_000
+      if (trigger === 'update' || stale) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            include: { subscription: true },
+          })
+          if (dbUser) {
+            token.plan = dbUser.subscription?.plan ?? 'FREE'
+            token.planRefreshedAt = Date.now()
+          }
+        } catch {}
       }
+
       return token
     },
     async session({ session, token }) {

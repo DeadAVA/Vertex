@@ -3,77 +3,168 @@ import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import Stripe from 'stripe'
 
+// Stripe may return current_period_start/end or null depending on subscription state
+function safeDate(ts: number | null | undefined): Date | null {
+  if (!ts || ts === 0) return null
+  return new Date(ts * 1000)
+}
+
+// In newer Stripe API versions, subscription ID on invoice may be object or string
+function getSubId(val: string | Stripe.Subscription | null | undefined): string | null {
+  if (!val) return null
+  if (typeof val === 'string') return val
+  return val.id ?? null
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text()
-  const sig = req.headers.get('stripe-signature')!
+  const sig = req.headers.get('stripe-signature')
+
+  if (!sig) {
+    return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
+  }
 
   let event: Stripe.Event
-
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch (err: any) {
-    return NextResponse.json({ error: `Webhook error: ${err.message}` }, { status: 400 })
+    console.error('[Webhook] Signature verification failed:', err.message)
+    return NextResponse.json({ error: `Signature error: ${err.message}` }, { status: 400 })
   }
 
-  switch (event.type) {
-    case 'customer.subscription.created':
-    case 'customer.subscription.updated': {
-      const sub = event.data.object as Stripe.Subscription
-      const userId = sub.metadata?.userId
+  console.log('[Webhook] Event received:', event.type, event.id)
 
-      if (!userId) break
+  try {
+    switch (event.type) {
 
-      await prisma.subscription.upsert({
-        where: { userId },
-        update: {
-          plan: sub.status === 'active' ? 'PREMIUM' : 'FREE',
-          status: mapStatus(sub.status),
-          stripeSubscriptionId: sub.id,
-          stripePriceId: sub.items.data[0]?.price.id,
-          currentPeriodStart: new Date(sub.current_period_start * 1000),
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-        },
-        create: {
-          userId,
-          plan: sub.status === 'active' ? 'PREMIUM' : 'FREE',
-          status: mapStatus(sub.status),
-          stripeSubscriptionId: sub.id,
-          stripePriceId: sub.items.data[0]?.price.id,
-          currentPeriodStart: new Date(sub.current_period_start * 1000),
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-        },
-      })
-      break
-    }
+      // ── Checkout completed — most reliable for initial subscription ──
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        const userId = session.metadata?.userId
+        const subscriptionId = getSubId(session.subscription as any)
 
-    case 'customer.subscription.deleted': {
-      const sub = event.data.object as Stripe.Subscription
-      const userId = sub.metadata?.userId
-      if (!userId) break
+        console.log('[Webhook] checkout.session.completed', { userId, subscriptionId })
 
-      await prisma.subscription.update({
-        where: { userId },
-        data: { plan: 'FREE', status: 'CANCELED' },
-      })
-      break
-    }
+        if (!userId || !subscriptionId) break
 
-    case 'invoice.payment_failed': {
-      const invoice = event.data.object as Stripe.Invoice
-      const subId = invoice.subscription as string
-      if (!subId) break
+        // Fetch full subscription to get period dates
+        const sub = await stripe.subscriptions.retrieve(subscriptionId)
 
-      const dbSub = await prisma.subscription.findFirst({
-        where: { stripeSubscriptionId: subId },
-      })
-      if (dbSub) {
-        await prisma.subscription.update({
-          where: { id: dbSub.id },
+        await prisma.subscription.upsert({
+          where: { userId },
+          update: {
+            plan: 'PREMIUM',
+            status: 'ACTIVE',
+            stripeCustomerId: (sub.customer as string) ?? null,
+            stripeSubscriptionId: sub.id,
+            stripePriceId: sub.items.data[0]?.price.id ?? null,
+            currentPeriodStart: safeDate((sub as any).current_period_start),
+            currentPeriodEnd: safeDate((sub as any).current_period_end),
+          },
+          create: {
+            userId,
+            plan: 'PREMIUM',
+            status: 'ACTIVE',
+            stripeCustomerId: (sub.customer as string) ?? null,
+            stripeSubscriptionId: sub.id,
+            stripePriceId: sub.items.data[0]?.price.id ?? null,
+            currentPeriodStart: safeDate((sub as any).current_period_start),
+            currentPeriodEnd: safeDate((sub as any).current_period_end),
+          },
+        })
+
+        console.log('[Webhook] User upgraded to PREMIUM:', userId)
+        break
+      }
+
+      // ── Subscription created / updated ───────────────────────────
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const sub = event.data.object as Stripe.Subscription
+        const userId = sub.metadata?.userId
+
+        console.log('[Webhook]', event.type, { userId, status: sub.status })
+
+        if (!userId) break
+
+        const newPlan = sub.status === 'active' || sub.status === 'trialing' ? 'PREMIUM' : 'FREE'
+
+        await prisma.subscription.upsert({
+          where: { userId },
+          update: {
+            plan: newPlan,
+            status: mapStatus(sub.status),
+            stripeCustomerId: (sub.customer as string) ?? null,
+            stripeSubscriptionId: sub.id,
+            stripePriceId: sub.items.data[0]?.price.id ?? null,
+            currentPeriodStart: safeDate((sub as any).current_period_start),
+            currentPeriodEnd: safeDate((sub as any).current_period_end),
+          },
+          create: {
+            userId,
+            plan: newPlan,
+            status: mapStatus(sub.status),
+            stripeCustomerId: (sub.customer as string) ?? null,
+            stripeSubscriptionId: sub.id,
+            stripePriceId: sub.items.data[0]?.price.id ?? null,
+            currentPeriodStart: safeDate((sub as any).current_period_start),
+            currentPeriodEnd: safeDate((sub as any).current_period_end),
+          },
+        })
+        break
+      }
+
+      // ── Subscription cancelled ───────────────────────────────────
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object as Stripe.Subscription
+        const userId = sub.metadata?.userId
+
+        console.log('[Webhook] subscription.deleted', { userId })
+        if (!userId) break
+
+        await prisma.subscription.updateMany({
+          where: { userId },
+          data: { plan: 'FREE', status: 'CANCELED' },
+        })
+        break
+      }
+
+      // ── Payment succeeded — ensure plan is ACTIVE ────────────────
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as Stripe.Invoice
+        const subId = getSubId((invoice as any).subscription ?? (invoice as any).subscription_id)
+
+        console.log('[Webhook] invoice.payment_succeeded', { subId })
+        if (!subId) break
+
+        await prisma.subscription.updateMany({
+          where: { stripeSubscriptionId: subId },
+          data: { plan: 'PREMIUM', status: 'ACTIVE' },
+        })
+        break
+      }
+
+      // ── Payment failed ───────────────────────────────────────────
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice
+        const subId = getSubId((invoice as any).subscription ?? (invoice as any).subscription_id)
+
+        console.log('[Webhook] invoice.payment_failed', { subId })
+        if (!subId) break
+
+        await prisma.subscription.updateMany({
+          where: { stripeSubscriptionId: subId },
           data: { status: 'PAST_DUE' },
         })
+        break
       }
-      break
+
+      default:
+        console.log('[Webhook] Unhandled event:', event.type)
     }
+  } catch (err: any) {
+    console.error('[Webhook] Handler error for', event.type, ':', err.message, err.stack)
+    return NextResponse.json({ error: 'Internal error: ' + err.message }, { status: 500 })
   }
 
   return NextResponse.json({ received: true })
@@ -85,7 +176,10 @@ function mapStatus(status: string): 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'INCOMP
     canceled: 'CANCELED',
     past_due: 'PAST_DUE',
     incomplete: 'INCOMPLETE',
+    incomplete_expired: 'CANCELED',
+    unpaid: 'PAST_DUE',
     trialing: 'ACTIVE',
+    paused: 'INCOMPLETE',
   }
   return map[status] ?? 'INCOMPLETE'
 }
