@@ -37,18 +37,18 @@ export function BillingSection({ plan, sub }: Props) {
   const statusInfo = sub ? (STATUS_STYLES[sub.status] ?? STATUS_STYLES.ACTIVE) : null
 
   return (
-    <div className="bg-bg-surface border border-bg-border rounded-2xl p-6">
+    <div className="bg-bg-surface border border-bg-border rounded-lg p-6">
       <h2 className="font-semibold text-tx mb-5 flex items-center gap-2">
         <CreditCard size={16} className="text-tx-muted" /> Suscripción y pagos
       </h2>
 
       {/* Current plan badge */}
-      <div className={`flex items-center gap-4 p-4 rounded-xl border mb-5 ${
+      <div className={`flex items-center gap-4 p-4 rounded-md border mb-5 ${
         isPremium
           ? 'bg-primary/5 border-primary/20'
           : 'bg-bg-elevated border-bg-border'
       }`}>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+        <div className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 ${
           isPremium ? 'bg-primary/15' : 'bg-bg-border'
         }`}>
           <Crown size={18} className={isPremium ? 'text-primary' : 'text-tx-subtle'} />
@@ -96,7 +96,7 @@ export function BillingSection({ plan, sub }: Props) {
         <button
           onClick={openPortal}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-bg-elevated hover:bg-bg-border text-tx-muted rounded-xl py-3 text-sm font-medium transition-colors border border-bg-border"
+          className="w-full flex items-center justify-center gap-2 bg-bg-elevated hover:bg-bg-border text-tx-muted rounded-md py-3 text-sm font-medium transition-colors border border-bg-border"
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
           {loading ? 'Abriendo portal de Stripe…' : 'Gestionar suscripción y tarjetas'}
@@ -104,7 +104,7 @@ export function BillingSection({ plan, sub }: Props) {
       ) : !isPremium ? (
         <a
           href="/precios"
-          className="block w-full text-center bg-primary hover:bg-primary-hover text-white rounded-xl py-3 font-semibold text-sm transition-colors shadow-glow-sm"
+          className="block w-full text-center bg-primary hover:bg-primary-hover text-white rounded-md py-3 font-semibold text-sm transition-colors "
         >
           <Crown size={14} className="inline mr-1.5" />
           Actualizar a Premium — $149 MXN/mes
@@ -113,7 +113,7 @@ export function BillingSection({ plan, sub }: Props) {
 
       {/* Past due warning */}
       {sub?.status === 'PAST_DUE' && (
-        <div className="mt-4 p-3 bg-warning/5 border border-warning/25 rounded-xl flex items-start gap-2.5">
+        <div className="mt-4 p-3 bg-warning/5 border border-warning/25 rounded-md flex items-start gap-2.5">
           <AlertTriangle size={14} className="text-warning shrink-0 mt-0.5" />
           <p className="text-xs text-tx-muted">
             Hay un problema con tu pago. Actualiza tu método de pago para continuar con Premium.

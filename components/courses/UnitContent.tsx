@@ -111,7 +111,7 @@ function ProblemCard({ problem, isPremium }: { problem: Problem; isPremium: bool
   }
 
   return (
-    <div className={`border rounded-xl overflow-hidden transition-all ${locked ? 'border-bg-border opacity-60' : 'border-bg-border hover:border-primary/20'}`}>
+    <div className={`border rounded-md overflow-hidden transition-all ${locked ? 'border-bg-border opacity-60' : 'border-bg-border hover:border-primary/20'}`}>
       <button
         className="w-full flex items-center gap-3 p-5 text-left"
         onClick={() => !locked && setExpanded(!expanded)}
@@ -237,7 +237,7 @@ export function UnitContent({ unit, courseSlug, userId, isPremium }: Props) {
       </div>
 
       {/* Theory */}
-      <div className="bg-bg-surface border border-bg-border rounded-2xl p-8 mb-8">
+      <div className="bg-bg-surface border border-bg-border rounded-lg p-8 mb-8">
         <h2 className="text-base font-semibold text-tx-muted uppercase tracking-wider mb-5 text-xs">Contenido</h2>
         <div>{renderContent(unit.content)}</div>
       </div>
@@ -259,7 +259,7 @@ export function UnitContent({ unit, courseSlug, userId, isPremium }: Props) {
         <button
           onClick={markComplete}
           disabled={markingDone}
-          className="flex items-center gap-2 bg-success/10 hover:bg-success/20 text-success border border-success/20 rounded-xl px-6 py-3 font-medium text-sm transition-colors"
+          className="flex items-center gap-2 bg-success/10 hover:bg-success/20 text-success border border-success/20 rounded-md px-6 py-3 font-medium text-sm transition-colors"
         >
           <CheckCircle2 size={17} />
           {markingDone ? 'Guardando…' : 'Marcar unidad como completada'}

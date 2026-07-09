@@ -45,7 +45,7 @@ export default async function CoursePage({ params }: Props) {
       </Link>
 
       {/* Header */}
-      <div className="bg-bg-surface border border-bg-border rounded-2xl p-8 mb-6">
+      <div className="bg-bg-surface border border-bg-border rounded-lg p-8 mb-6">
         <div className="flex items-start gap-5">
           <div className="text-5xl">{course.emoji}</div>
           <div className="flex-1">
@@ -81,7 +81,7 @@ export default async function CoursePage({ params }: Props) {
             <Link
               key={unit.id}
               href={locked ? '/precios' : `/cursos/${course.slug}/${unit.slug}`}
-              className={`flex items-center gap-4 bg-bg-surface border rounded-xl p-5 transition-all group ${
+              className={`flex items-center gap-4 bg-bg-surface border rounded-md p-5 transition-all group ${
                 locked ? 'border-bg-border opacity-60' : done ? 'border-success/20 hover:border-success/40' : 'border-bg-border hover:border-primary/30'
               }`}
             >

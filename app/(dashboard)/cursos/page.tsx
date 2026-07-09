@@ -35,7 +35,7 @@ export default async function CursosPage() {
                 <Link
                   key={course.id}
                   href={locked ? '/precios' : `/cursos/${course.slug}`}
-                  className={`relative flex items-start gap-4 bg-bg-surface border rounded-2xl p-6 transition-all group ${
+                  className={`relative flex items-start gap-4 bg-bg-surface border rounded-lg p-6 transition-all group ${
                     locked ? 'border-bg-border opacity-70 cursor-pointer' : 'border-bg-border hover:border-primary/30'
                   }`}
                 >

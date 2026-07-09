@@ -101,7 +101,7 @@ export function MathSolverForm() {
             <div className="grid grid-cols-4 gap-1.5">
               {TYPES.map(t => (
                 <button key={t.value} onClick={() => switchType(t.value)}
-                  className={`px-2 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                  className={`px-2 py-2.5 rounded-md text-xs font-medium transition-all ${
                     type === t.value
                       ? 'bg-primary/15 text-primary border border-primary/30'
                       : 'bg-bg-elevated text-tx-muted border border-bg-border hover:border-primary/20 hover:text-tx'
@@ -125,7 +125,7 @@ export function MathSolverForm() {
               onChange={e => setExpression(e.target.value)}
               rows={type === 'system' ? 3 : 2}
               placeholder={currentType.placeholder}
-              className="w-full bg-bg-elevated border border-bg-border rounded-xl px-4 py-3 text-tx placeholder-tx-subtle text-sm font-mono focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors resize-none"
+              className="w-full bg-bg-elevated border border-bg-border rounded-md px-4 py-3 text-tx placeholder-tx-subtle text-sm font-mono focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors resize-none"
               onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) solve() }}
             />
           </div>
@@ -163,13 +163,13 @@ export function MathSolverForm() {
           {/* Buttons */}
           <div className="flex gap-2">
             <button onClick={solve} disabled={loading || !expression.trim()}
-              className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-xl py-3.5 font-semibold transition-colors shadow-glow-sm">
+              className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-md py-3.5 font-semibold transition-colors ">
               {loading ? <Loader2 size={18} className="animate-spin" /> : <Sigma size={18} />}
               {loading ? 'Calculando…' : 'Resolver'}
             </button>
             {canPlot && (
               <button onClick={() => setShowGraph(!showGraph)}
-                className={`flex items-center gap-1.5 px-4 rounded-xl font-semibold text-sm border transition-colors ${
+                className={`flex items-center gap-1.5 px-4 rounded-md font-semibold text-sm border transition-colors ${
                   showGraph
                     ? 'bg-primary/15 text-primary border-primary/30'
                     : 'bg-bg-elevated text-tx-muted border-bg-border hover:text-tx hover:border-primary/20'
@@ -180,7 +180,7 @@ export function MathSolverForm() {
           </div>
 
           {/* Syntax hint */}
-          <div className="bg-bg-elevated border border-bg-border rounded-xl p-4 text-xs text-tx-muted space-y-1">
+          <div className="bg-bg-elevated border border-bg-border rounded-md p-4 text-xs text-tx-muted space-y-1">
             <div className="font-medium text-tx text-xs mb-2">Sintaxis aceptada</div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               <div><code className="text-primary">x^2</code> → x²</div>
@@ -198,7 +198,7 @@ export function MathSolverForm() {
         {/* ── Result panel ───────────────────────────────────────── */}
         <div>
           {!result && !error && !loading && (
-            <div className="bg-bg-surface border border-bg-border rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center gap-3">
+            <div className="bg-bg-surface border border-bg-border rounded-lg p-8 h-full flex flex-col items-center justify-center text-center gap-3">
               <Sigma size={40} className="text-bg-border" />
               <p className="text-tx-muted text-sm">El resultado aparecerá aquí</p>
               <p className="text-tx-subtle text-xs">Ctrl+Enter para calcular rápido</p>
@@ -206,25 +206,25 @@ export function MathSolverForm() {
           )}
 
           {loading && (
-            <div className="bg-bg-surface border border-bg-border rounded-2xl p-8 h-full flex items-center justify-center">
+            <div className="bg-bg-surface border border-bg-border rounded-lg p-8 h-full flex items-center justify-center">
               <Loader2 size={28} className="text-primary animate-spin" />
             </div>
           )}
 
           {error && (
-            <div className="bg-danger/5 border border-danger/20 rounded-2xl p-6">
+            <div className="bg-danger/5 border border-danger/20 rounded-lg p-6">
               <p className="text-danger text-sm font-medium mb-1">Error</p>
               <p className="text-tx-muted text-sm font-mono">{error}</p>
             </div>
           )}
 
           {result && (
-            <div className="bg-bg-surface border border-bg-border rounded-2xl overflow-hidden">
+            <div className="bg-bg-surface border border-bg-border rounded-lg overflow-hidden">
               {/* Main result */}
               {(result.latex || result.result) && (
                 <div className="px-6 py-5 border-b border-bg-border">
                   <div className="text-xs text-tx-muted font-medium uppercase tracking-wider mb-3">Resultado</div>
-                  <div className="bg-bg-elevated border border-bg-border rounded-xl px-5 py-4 text-center overflow-x-auto">
+                  <div className="bg-bg-elevated border border-bg-border rounded-md px-5 py-4 text-center overflow-x-auto">
                     <span className="text-xl">
                       <MathRenderer text={result.latex ? `$$${result.latex}$$` : String(result.result)} />
                     </span>
@@ -238,7 +238,7 @@ export function MathSolverForm() {
                   <div className="text-xs text-tx-muted font-medium uppercase tracking-wider mb-3">Soluciones</div>
                   <div className="flex flex-wrap gap-2">
                     {(result.solutionLatex as string[]).map((s, i) => (
-                      <div key={i} className="bg-primary/10 border border-primary/25 rounded-xl px-4 py-2.5 font-mono text-primary">
+                      <div key={i} className="bg-primary/10 border border-primary/25 rounded-md px-4 py-2.5 font-mono text-primary">
                         <MathRenderer text={`$${s}$`} />
                       </div>
                     ))}
@@ -274,7 +274,7 @@ export function MathSolverForm() {
 
       {/* ── Interactive Graph ──────────────────────────────────────── */}
       {(showGraph && canPlot) && (
-        <div className="bg-bg-surface border border-bg-border rounded-2xl p-6">
+        <div className="bg-bg-surface border border-bg-border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm font-semibold text-tx flex items-center gap-2">
               <BarChart2 size={16} className="text-primary" />

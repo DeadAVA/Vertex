@@ -2,15 +2,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Home, BookOpen, Sigma, Wrench, CreditCard, User, LogOut, Crown } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Sigma, Wrench, Zap, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { href: '/dashboard', icon: Home, label: 'Inicio' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Inicio' },
   { href: '/cursos', icon: BookOpen, label: 'Cursos' },
   { href: '/solver', icon: Sigma, label: 'Solver' },
   { href: '/herramientas', icon: Wrench, label: 'Herramientas' },
-  { href: '/precios', icon: CreditCard, label: 'Premium' },
+  { href: '/precios', icon: Zap, label: 'Premium' },
 ]
 
 export function Sidebar() {
@@ -18,21 +18,30 @@ export function Sidebar() {
   const { data: session } = useSession()
   const isPremium = session?.user?.plan === 'PREMIUM'
 
+  const initials = session?.user?.name
+    ?.split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() ?? 'U'
+
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-60 bg-bg-surface border-r border-bg-border flex flex-col z-40">
+    <aside className="fixed left-0 top-0 bottom-0 w-56 bg-bg-surface border-r border-bg-border flex flex-col z-40">
       {/* Brand */}
-      <div className="px-5 py-5 border-b border-bg-border">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">VX</div>
-          <div>
-            <div className="font-semibold text-tx text-sm">Vértice</div>
-            <div className="text-tx-subtle text-xs">Academia</div>
-          </div>
-        </div>
+      <div className="h-[58px] px-5 flex items-center border-b border-bg-border shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <span className="font-display font-bold text-tx text-[15px] tracking-tight">Vertex Academic</span>
+          <span className="text-[9px] font-mono font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded uppercase tracking-[0.08em]">
+            Beta
+          </span>
+        </Link>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
+        <p className="text-[10px] font-semibold text-tx-subtle uppercase tracking-[0.1em] px-3 mb-3">
+          Plataforma
+        </p>
         {NAV.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
@@ -40,16 +49,18 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
+                'flex items-center gap-2.5 py-2 rounded-md text-[13px] font-medium transition-all border-l-2',
                 active
-                  ? 'bg-primary/15 text-primary border border-primary/20'
-                  : 'text-tx-muted hover:bg-bg-elevated hover:text-tx'
+                  ? 'border-l-primary text-tx bg-bg-elevated pl-[10px] pr-3'
+                  : 'border-l-transparent text-tx-muted hover:text-tx hover:bg-bg-elevated/50 pl-[10px] pr-3'
               )}
             >
-              <Icon size={17} />
-              {label}
+              <Icon size={14} strokeWidth={active ? 2.5 : 1.75} className="shrink-0" />
+              <span className="flex-1">{label}</span>
               {href === '/precios' && !isPremium && (
-                <span className="ml-auto text-xs bg-warning/15 text-warning px-1.5 py-0.5 rounded-md font-medium">Upgrade</span>
+                <span className="text-[9px] bg-primary/15 text-primary px-1.5 py-0.5 rounded font-bold tracking-[0.06em] uppercase">
+                  Pro
+                </span>
               )}
             </Link>
           )
@@ -57,29 +68,35 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div className="border-t border-bg-border p-3 space-y-1">
+      <div className="border-t border-bg-border p-2 space-y-1 shrink-0">
         {isPremium && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 mb-2">
-            <Crown size={14} className="text-primary" />
-            <span className="text-xs text-primary font-medium">Plan Premium</span>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10 mb-1">
+            <Zap size={11} className="text-primary fill-primary shrink-0" />
+            <span className="text-[11px] text-primary font-semibold tracking-wide">Premium activo</span>
           </div>
         )}
+
         <Link
           href="/perfil"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tx-muted hover:bg-bg-elevated hover:text-tx transition-all"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-bg-elevated transition-colors group"
         >
-          <User size={17} />
+          <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+            <span className="text-primary text-[10px] font-bold font-display">{initials}</span>
+          </div>
           <div className="flex-1 min-w-0">
-            <div className="truncate font-medium text-tx text-xs">{session?.user?.name ?? 'Usuario'}</div>
-            <div className="truncate text-tx-subtle text-xs">{session?.user?.email}</div>
+            <div className="truncate text-tx text-[12px] font-medium group-hover:text-tx transition-colors">
+              {session?.user?.name ?? 'Usuario'}
+            </div>
+            <div className="truncate text-tx-subtle text-[10px]">{session?.user?.email}</div>
           </div>
         </Link>
+
         <button
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tx-muted hover:bg-danger/10 hover:text-danger transition-all"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-tx-subtle hover:text-danger hover:bg-danger/8 transition-all"
         >
-          <LogOut size={17} />
-          Cerrar sesión
+          <LogOut size={13} className="shrink-0" />
+          <span className="text-[12px]">Cerrar sesión</span>
         </button>
       </div>
     </aside>

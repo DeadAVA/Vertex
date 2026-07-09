@@ -17,8 +17,8 @@ export function UpgradeToast() {
   }, [update, router])
 
   return (
-    <div className="mb-6 bg-primary/10 border border-primary/25 rounded-2xl p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
-      <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+    <div className="mb-6 bg-primary/10 border border-primary/25 rounded-lg p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
+      <div className="w-9 h-9 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
         <Crown size={16} className="text-primary" />
       </div>
       <div>

@@ -8,7 +8,7 @@ import { UsageBar } from '@/components/perfil/UsageBar'
 import { BillingSection } from '@/components/perfil/BillingSection'
 import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Mi Perfil — Vértice' }
+export const metadata: Metadata = { title: 'Mi Perfil' }
 
 const DAILY_LIMIT = { FREE: 10, PREMIUM: 100 }
 
@@ -58,9 +58,9 @@ export default async function PerfilPage() {
       </div>
 
       {/* ── User card ──────────────────────────────────────────── */}
-      <div className="bg-bg-surface border border-bg-border rounded-2xl p-7">
+      <div className="bg-bg-surface border border-bg-border rounded-lg p-7">
         <div className="flex items-start gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/25 flex items-center justify-center text-2xl font-bold text-primary shrink-0">
+          <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/25 flex items-center justify-center text-2xl font-bold text-primary shrink-0">
             {session.user.name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
@@ -93,7 +93,7 @@ export default async function PerfilPage() {
           { icon: Zap, label: 'Consultas IA hoy', value: aiUsed, color: 'text-warning' },
           { icon: BarChart2, label: 'Días activo', value: daysSince, color: 'text-purple-400' },
         ].map(({ icon: Icon, label, value, color }) => (
-          <div key={label} className="bg-bg-surface border border-bg-border rounded-xl p-4">
+          <div key={label} className="bg-bg-surface border border-bg-border rounded-md p-4">
             <div className={`flex items-center gap-1.5 text-xs text-tx-muted mb-2`}>
               <Icon size={12} className={color} />{label}
             </div>
@@ -103,7 +103,7 @@ export default async function PerfilPage() {
       </div>
 
       {/* ── AI Solver Usage ────────────────────────────────────── */}
-      <div className="bg-bg-surface border border-bg-border rounded-2xl p-6">
+      <div className="bg-bg-surface border border-bg-border rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-tx flex items-center gap-2">
             <Zap size={16} className="text-warning" /> Solver IA — uso diario
@@ -112,7 +112,7 @@ export default async function PerfilPage() {
         </div>
         <UsageBar used={aiUsed} limit={aiLimit} plan={plan} />
         {!isPremium && (
-          <div className="mt-4 p-3 bg-primary/5 border border-primary/15 rounded-xl flex items-center gap-3">
+          <div className="mt-4 p-3 bg-primary/5 border border-primary/15 rounded-md flex items-center gap-3">
             <Star size={14} className="text-primary shrink-0" />
             <span className="text-xs text-tx-muted">
               <span className="text-tx font-medium">Premium:</span> 100 consultas/día, acceso a modelos más potentes
@@ -135,13 +135,13 @@ export default async function PerfilPage() {
 
       {/* ── Plan comparison ────────────────────────────────────── */}
       {!isPremium && (
-        <div className="bg-bg-surface border border-bg-border rounded-2xl p-6">
+        <div className="bg-bg-surface border border-bg-border rounded-lg p-6">
           <h2 className="font-semibold text-tx mb-4 flex items-center gap-2">
             <Crown size={16} className="text-primary" /> Planes
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Free */}
-            <div className="border border-bg-border rounded-xl p-5 space-y-3">
+            <div className="border border-bg-border rounded-md p-5 space-y-3">
               <div className="font-semibold text-tx">Gratuito</div>
               <div className="text-2xl font-bold text-tx">$0 <span className="text-sm font-normal text-tx-muted">/mes</span></div>
               <ul className="space-y-2">
@@ -154,7 +154,7 @@ export default async function PerfilPage() {
               <div className="text-xs text-tx-subtle border border-bg-border rounded-lg px-3 py-2 bg-bg-elevated">Plan actual</div>
             </div>
             {/* Premium */}
-            <div className="border border-primary/30 rounded-xl p-5 space-y-3 bg-primary/3 relative overflow-hidden">
+            <div className="border border-primary/30 rounded-md p-5 space-y-3 bg-primary/3 relative overflow-hidden">
               <div className="absolute top-3 right-3">
                 <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full font-semibold">Recomendado</span>
               </div>
@@ -167,7 +167,7 @@ export default async function PerfilPage() {
                   </li>
                 ))}
               </ul>
-              <a href="/precios" className="block w-full text-center bg-primary hover:bg-primary-hover text-white rounded-xl py-2.5 font-semibold text-sm transition-colors">
+              <a href="/precios" className="block w-full text-center bg-primary hover:bg-primary-hover text-white rounded-md py-2.5 font-semibold text-sm transition-colors">
                 Mejorar plan
               </a>
             </div>
@@ -177,7 +177,7 @@ export default async function PerfilPage() {
 
       {/* ── Activity history ───────────────────────────────────── */}
       {progressData.length > 0 && (
-        <div className="bg-bg-surface border border-bg-border rounded-2xl p-6">
+        <div className="bg-bg-surface border border-bg-border rounded-lg p-6">
           <h2 className="font-semibold text-tx mb-4 flex items-center gap-2">
             <BarChart2 size={16} className="text-tx-muted" /> Actividad reciente
           </h2>

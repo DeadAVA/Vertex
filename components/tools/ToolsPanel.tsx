@@ -48,7 +48,7 @@ function ScientificCalc() {
 
   return (
     <div className="max-w-xs">
-      <div className="bg-bg-elevated border border-bg-border rounded-xl p-4 mb-3">
+      <div className="bg-bg-elevated border border-bg-border rounded-md p-4 mb-3">
         <div className="text-tx-subtle text-xs h-4 mb-1">{history}</div>
         <div className="text-tx text-2xl font-mono text-right truncate">{display}</div>
       </div>
@@ -58,9 +58,9 @@ function ScientificCalc() {
             key={i}
             onClick={() => press(k)}
             className={cn(
-              'h-12 rounded-xl text-sm font-medium transition-colors',
+              'h-11 rounded-md text-sm font-medium transition-colors',
               k === '='
-                ? 'bg-primary hover:bg-primary-hover text-white shadow-glow-sm'
+                ? 'bg-primary hover:bg-primary-hover text-white'
                 : k === 'C'
                 ? 'bg-danger/15 hover:bg-danger/25 text-danger'
                 : ['sin', 'cos', 'tan', '√', '(', ')', '%'].includes(k)
@@ -131,23 +131,23 @@ function QuadraticSolver() {
               value={val as string}
               onChange={(e) => (setter as any)(e.target.value)}
               placeholder="0"
-              className="w-full bg-bg-elevated border border-bg-border rounded-xl px-3 py-3 text-tx text-center font-mono text-lg focus:outline-none focus:border-primary/50 transition-colors"
+              className="w-full bg-bg-elevated border border-bg-border rounded-md px-3 py-2.5 text-tx text-center font-mono text-lg focus:outline-none focus:border-primary/50 transition-colors"
             />
           </div>
         ))}
       </div>
-      <button onClick={solve} className="w-full bg-primary hover:bg-primary-hover text-white rounded-xl py-3 font-semibold text-sm transition-colors shadow-glow-sm mb-5">
+      <button onClick={solve} className="w-full bg-primary hover:bg-primary-hover text-white rounded-md py-2.5 font-semibold text-sm transition-colors mb-5">
         Resolver
       </button>
       {result && (
         <div className="space-y-4">
-          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+          <div className="bg-primary/10 border border-primary/20 rounded-md p-4">
             <div className="text-xs text-primary font-medium mb-2">Soluciones</div>
             {result.solutions.map((s, i) => (
               <div key={i} className="text-tx font-mono text-lg">{s}</div>
             ))}
           </div>
-          <div className="bg-bg-elevated border border-bg-border rounded-xl p-4">
+          <div className="bg-bg-elevated border border-bg-border rounded-md p-4">
             <div className="text-xs text-tx-muted font-medium mb-3">Proceso</div>
             {result.steps.map((s, i) => (
               <div key={i} className="flex items-start gap-2 mb-2 text-sm">
@@ -210,16 +210,16 @@ function PercentageCalc() {
               type="number"
               value={i === 0 ? a : b}
               onChange={(e) => i === 0 ? setA(e.target.value) : setB(e.target.value)}
-              className="w-full bg-bg-elevated border border-bg-border rounded-xl px-3 py-3 text-tx font-mono focus:outline-none focus:border-primary/50 transition-colors"
+              className="w-full bg-bg-elevated border border-bg-border rounded-md px-3 py-2.5 text-tx font-mono focus:outline-none focus:border-primary/50 transition-colors"
             />
           </div>
         ))}
       </div>
-      <button onClick={calc} className="w-full bg-primary hover:bg-primary-hover text-white rounded-xl py-3 font-semibold text-sm transition-colors shadow-glow-sm mb-5">
+      <button onClick={calc} className="w-full bg-primary hover:bg-primary-hover text-white rounded-md py-2.5 font-semibold text-sm transition-colors mb-5">
         Calcular
       </button>
       {result && (
-        <div className="bg-bg-elevated border border-bg-border rounded-xl p-4">
+        <div className="bg-bg-elevated border border-bg-border rounded-md p-4">
           <div className="text-3xl font-bold text-primary mb-3">{result.value}</div>
           <div className="space-y-1">
             {result.steps.map((s, i) => (
@@ -283,7 +283,7 @@ function PhysicsCalc() {
           </button>
         ))}
       </div>
-      <div className="bg-bg-elevated border border-bg-border rounded-xl px-4 py-3 mb-4 font-mono text-primary text-lg">{formula.formula}</div>
+      <div className="bg-bg-elevated border border-bg-border rounded-md px-4 py-3 mb-4 font-mono text-primary text-lg">{formula.formula}</div>
       <div className="grid grid-cols-2 gap-3 mb-4">
         {formula.fields.map((label, i) => (
           <div key={i}>
@@ -292,16 +292,16 @@ function PhysicsCalc() {
               type="number"
               value={values[i]}
               onChange={(e) => { const v = [...values]; v[i] = e.target.value; setValues(v) }}
-              className="w-full bg-bg-elevated border border-bg-border rounded-xl px-3 py-3 text-tx font-mono focus:outline-none focus:border-primary/50 transition-colors"
+              className="w-full bg-bg-elevated border border-bg-border rounded-md px-3 py-2.5 text-tx font-mono focus:outline-none focus:border-primary/50 transition-colors"
             />
           </div>
         ))}
       </div>
-      <button onClick={calcPhysics} className="w-full bg-primary hover:bg-primary-hover text-white rounded-xl py-3 font-semibold text-sm transition-colors shadow-glow-sm mb-4">
+      <button onClick={calcPhysics} className="w-full bg-primary hover:bg-primary-hover text-white rounded-md py-2.5 font-semibold text-sm transition-colors mb-4">
         Calcular
       </button>
       {result && (
-        <div className="bg-bg-elevated border border-bg-border rounded-xl p-4">
+        <div className="bg-bg-elevated border border-bg-border rounded-md p-4">
           <div className="text-2xl font-bold text-primary mb-3">{result.result}</div>
           {result.steps.map((s, i) => <div key={i} className="text-sm text-tx-muted font-mono">{s}</div>)}
         </div>
@@ -316,16 +316,16 @@ export function ToolsPanel() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div className="flex flex-wrap gap-1.5 mb-6">
         {TABS.map((t, i) => (
           <button
             key={t}
             onClick={() => setTab(i)}
             className={cn(
-              'px-5 py-2.5 rounded-xl text-sm font-medium transition-all',
+              'px-4 py-2 rounded-md text-[13px] font-medium transition-all',
               tab === i
-                ? 'bg-primary text-white shadow-glow-sm'
-                : 'bg-bg-surface border border-bg-border text-tx-muted hover:text-tx hover:border-primary/30'
+                ? 'bg-primary text-white'
+                : 'bg-bg-surface border border-bg-border text-tx-muted hover:text-tx hover:border-bg-border/80'
             )}
           >
             {t}
@@ -333,7 +333,7 @@ export function ToolsPanel() {
         ))}
       </div>
 
-      <div className="bg-bg-surface border border-bg-border rounded-2xl p-8">
+      <div className="bg-bg-surface border border-bg-border rounded-lg p-8">
         {tab === 0 && <ScientificCalc />}
         {tab === 1 && <QuadraticSolver />}
         {tab === 2 && <PercentageCalc />}

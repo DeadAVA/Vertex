@@ -17,7 +17,7 @@ export function UpgradeButton() {
     <button
       onClick={handleUpgrade}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white rounded-xl py-3 font-semibold text-sm transition-colors shadow-glow-sm"
+      className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white rounded-md py-3 font-semibold text-sm transition-colors "
     >
       {loading && <Loader2 size={16} className="animate-spin" />}
       {loading ? 'Redirigiendo a Stripe…' : 'Suscribirse ahora'}
