@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #09090f;
+    --bg-surface: #111118;
+    --bg-elevated: #16161f;
+    --bg-border: #1e1e2e;
+    --primary: #7c3aed;
+    --primary-hover: #6d28d9;
+    --accent: #06b6d4;
+    --tx: #e2e8f0;
+    --tx-muted: #94a3b8;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--tx);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code, pre, kbd {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2e2e44; }
+
+  ::selection { background: rgba(124, 58, 237, 0.3); color: #e2e8f0; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(17, 17, 24, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(30, 30, 46, 0.8);
+  }
+
+  .gradient-mesh {
+    background:
+      radial-gradient(at 20% 20%, rgba(124, 58, 237, 0.12) 0px, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
+      var(--bg);
+  }
+
+  .prose-vertex {
+    @apply text-tx/90 leading-relaxed;
+  }
+  .prose-vertex h2 {
+    @apply text-tx text-xl font-semibold mt-6 mb-3 border-b border-bg-border pb-2;
+  }
+  .prose-vertex h3 {
+    @apply text-tx text-lg font-medium mt-4 mb-2;
+  }
+  .prose-vertex p {
+    @apply mb-3;
+  }
+  .prose-vertex code {
+    @apply bg-bg-elevated text-primary-500 px-1.5 py-0.5 rounded text-sm;
+  }
+  .prose-vertex pre {
+    @apply bg-bg-elevated border border-bg-border rounded-lg p-4 overflow-x-auto text-sm my-4;
+  }
+  .prose-vertex table {
+    @apply w-full border-collapse text-sm my-4;
+  }
+  .prose-vertex th {
+    @apply border border-bg-border bg-bg-elevated px-3 py-2 text-left text-tx font-medium;
+  }
+  .prose-vertex td {
+    @apply border border-bg-border px-3 py-2 text-tx-muted;
+  }
+  .prose-vertex ul, .prose-vertex ol {
+    @apply pl-6 mb-3 space-y-1;
+  }
+  .prose-vertex li {
+    @apply text-tx/80;
+  }
+  .prose-vertex strong {
+    @apply text-tx font-semibold;
+  }
+
+  .step-card {
+    @apply relative pl-10 pb-6;
+  }
+  .step-card::before {
+    content: attr(data-step);
+    @apply absolute left-0 top-0 w-7 h-7 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-bold flex items-center justify-center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-card:not(:last-child)::after {
+    content: '';
+    @apply absolute left-3.5 top-7 bottom-0 w-px bg-bg-border;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .border-glow {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.4), 0 0 20px rgba(124, 58, 237, 0.2);
+  }
+}

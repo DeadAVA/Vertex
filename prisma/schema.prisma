@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── NextAuth models ───────────────────────────────────────────
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Users ─────────────────────────────────────────────────────
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(STUDENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  subscription Subscription?
+  progress     Progress[]
+  attempts     ProblemAttempt[]
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+// ─── Subscriptions ─────────────────────────────────────────────
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  plan                 Plan               @default(FREE)
+  status               SubStatus          @default(ACTIVE)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Plan {
+  FREE
+  PREMIUM
+}
+
+enum SubStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  INCOMPLETE
+}
+
+// ─── Courses ───────────────────────────────────────────────────
+model Course {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  area        String
+  level       String
+  isPremium   Boolean  @default(false)
+  order       Int      @default(0)
+  emoji       String   @default("📚")
+  createdAt   DateTime @default(now())
+
+  units    CourseUnit[]
+  progress Progress[]
+}
+
+model CourseUnit {
+  id        String   @id @default(cuid())
+  courseId  String
+  slug      String
+  title     String
+  content   String   @db.Text
+  order     Int
+  isPremium Boolean  @default(false)
+
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress Progress[]
+  problems Problem[]
+
+  @@unique([courseId, slug])
+}
+
+// ─── Problems ──────────────────────────────────────────────────
+model Problem {
+  id         String   @id @default(cuid())
+  unitId     String
+  title      String
+  statement  String   @db.Text
+  difficulty String
+  isPremium  Boolean  @default(false)
+  steps      Json
+  answer     String
+  hints      Json?
+
+  unit     CourseUnit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  attempts ProblemAttempt[]
+
+  @@unique([unitId, title])
+}
+
+model ProblemAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  problemId String
+  answer    String
+  isCorrect Boolean
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+// ─── Progress ──────────────────────────────────────────────────
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  unitId    String?
+  completed Boolean  @default(false)
+  score     Int?
+  lastSeen  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  unit   CourseUnit? @relation(fields: [unitId], references: [id])
+
+  @@unique([userId, courseId, unitId])
+}
