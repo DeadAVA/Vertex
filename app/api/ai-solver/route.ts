@@ -161,7 +161,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    if (parsed.error) return NextResponse.json({ error: parsed.error }, { status: 400 })
     return NextResponse.json({ ...parsed, used: usage.requests + 1, limit })
 
   } catch (err: any) {
@@ -169,7 +168,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El modelo tardó demasiado. Intenta de nuevo.' }, { status: 504 })
     }
     if (err.cause?.code === 'ECONNREFUSED') {
-      return NextResponse.json({ error: `No se puede conectar a Ollama en ${OLLAMA_URL}. ¿Está corriendo?` }, { status: 503 })
+      return NextResponse.json({ error: 'Servicio de IA no disponible. Intenta más tarde.' }, { status: 503 })
     }
     return NextResponse.json({ error: err.message ?? 'Error desconocido.' }, { status: 500 })
   }

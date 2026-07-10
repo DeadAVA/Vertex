@@ -173,6 +173,13 @@ model AiUsage {
   @@unique([userId, date])
 }
 
+// ─── Admin Config (key-value store for runtime settings) ───────
+model Config {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
 // ─── Progress ──────────────────────────────────────────────────
 model Progress {
   id        String   @id @default(cuid())

@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LayoutDashboard, BookOpen, Sigma, Wrench, Zap, LogOut } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Sigma, Wrench, Zap, LogOut, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -17,6 +17,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isPremium = session?.user?.plan === 'PREMIUM'
+  const isAdmin = (session?.user as any)?.role === 'ADMIN'
 
   const initials = session?.user?.name
     ?.split(' ')
@@ -91,6 +92,15 @@ export function Sidebar() {
           </div>
         </Link>
 
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-warning/80 hover:text-warning hover:bg-warning/8 transition-colors"
+          >
+            <ShieldCheck size={13} className="shrink-0" />
+            <span className="text-[12px] font-semibold">Panel Admin</span>
+          </Link>
+        )}
         <button
           onClick={() => signOut({ callbackUrl: '/' })}
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-tx-subtle hover:text-danger hover:bg-danger/8 transition-all"

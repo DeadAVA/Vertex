@@ -20,9 +20,10 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+        const email = credentials.email.toLowerCase()
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
           include: { subscription: true },
         })
 
@@ -37,6 +38,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           image: user.image,
           plan: user.subscription?.plan ?? 'FREE',
+          role: user.role,
         }
       },
     }),
@@ -44,16 +46,13 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
-        // Fresh login — bake the plan into the token
         token.id = user.id
         token.plan = (user as any).plan ?? 'FREE'
+        token.role = (user as any).role ?? 'STUDENT'
         token.planRefreshedAt = Date.now()
       }
 
-      // Re-fetch plan from DB when:
-      // 1. Client calls session.update() (e.g. after Stripe redirect)
-      // 2. Plan data is older than 60 seconds (keeps it fresh after webhooks)
-      const stale = !token.planRefreshedAt || (Date.now() - (token.planRefreshedAt as number)) > 60_000
+      const stale = !token.planRefreshedAt || (Date.now() - (token.planRefreshedAt as number)) > 300_000
       if (trigger === 'update' || stale) {
         try {
           const dbUser = await prisma.user.findUnique({
@@ -62,9 +61,12 @@ export const authOptions: NextAuthOptions = {
           })
           if (dbUser) {
             token.plan = dbUser.subscription?.plan ?? 'FREE'
+            token.role = dbUser.role
             token.planRefreshedAt = Date.now()
           }
-        } catch {}
+        } catch (e) {
+          console.error('[JWT refresh]', e)
+        }
       }
 
       return token
@@ -73,6 +75,7 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id as string
         session.user.plan = token.plan as string
+        session.user.role = token.role as string
       }
       return session
     },
@@ -87,6 +90,16 @@ declare module 'next-auth' {
       email?: string | null
       image?: string | null
       plan: string
+      role: string
     }
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string
+    plan: string
+    role: string
+    planRefreshedAt: number
   }
 }

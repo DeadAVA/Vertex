@@ -17,6 +17,11 @@ function getSubId(val: string | Stripe.Subscription | null | undefined): string 
 }
 
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('[Webhook] STRIPE_WEBHOOK_SECRET is not configured')
+    return NextResponse.json({ error: 'Webhook no configurado.' }, { status: 500 })
+  }
+
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')
 
@@ -26,10 +31,10 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET)
   } catch (err: any) {
     console.error('[Webhook] Signature verification failed:', err.message)
-    return NextResponse.json({ error: `Signature error: ${err.message}` }, { status: 400 })
+    return NextResponse.json({ error: 'Firma inválida.' }, { status: 400 })
   }
 
   console.log('[Webhook] Event received:', event.type, event.id)
