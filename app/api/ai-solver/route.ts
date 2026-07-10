@@ -161,7 +161,10 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    return NextResponse.json({ ...parsed, used: usage.requests + 1, limit })
+    // Strip any LLM-generated 'error' field to prevent it from being treated as an error
+    // by the client's `data.error` check on 200 responses.
+    const { error: _discard, ...safeFields } = parsed
+    return NextResponse.json({ ...safeFields, used: usage.requests + 1, limit })
 
   } catch (err: any) {
     if (err.name === 'TimeoutError') {
