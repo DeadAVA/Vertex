@@ -20,6 +20,12 @@ ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 RUN npx prisma generate
+
+# Prisma falla si DATABASE_URL no existe al importar los módulos durante el build.
+# Este placeholder es solo para satisfacer la validación en tiempo de build;
+# el valor real viene de .env.prod en runtime.
+ENV DATABASE_URL=postgresql://localhost/build_placeholder
+ENV NEXTAUTH_SECRET=build_placeholder
 RUN npx next build
 
 # ─── Stage 3: Runner de producción ─────────────────────────────────────────────
