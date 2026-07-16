@@ -10,12 +10,7 @@ echo "▶ Construyendo imagen Docker..."
 docker compose build
 
 echo "▶ Levantando servicios..."
-docker compose up -d
-
-echo "▶ Descargando modelos de Ollama (puede tardar varios minutos)..."
-sleep 5
-docker exec vertex-ollama ollama pull qwen2.5:14b
-docker exec vertex-ollama ollama pull moondream
+docker compose up -d --remove-orphans
 
 echo ""
 echo "✅ Deploy completo. App corriendo en http://localhost:3000"
