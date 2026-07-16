@@ -26,6 +26,7 @@ RUN npx prisma generate
 # el valor real viene de .env.prod en runtime.
 ENV DATABASE_URL=postgresql://localhost/build_placeholder
 ENV NEXTAUTH_SECRET=build_placeholder
+RUN mkdir -p public
 RUN npx next build
 
 # ─── Stage 3: Runner de producción ─────────────────────────────────────────────
