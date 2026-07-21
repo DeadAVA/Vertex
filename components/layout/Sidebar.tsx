@@ -1,112 +1,121 @@
 'use client'
+
+import type { Session } from 'next-auth'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LayoutDashboard, BookOpen, Sigma, Wrench, Zap, LogOut, ShieldCheck } from 'lucide-react'
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  ShieldCheck,
+  Sigma,
+  Wrench,
+  Zap,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Inicio' },
   { href: '/cursos', icon: BookOpen, label: 'Cursos' },
+  { href: '/docs', icon: FileText, label: 'Docs' },
   { href: '/solver', icon: Sigma, label: 'Solver' },
   { href: '/herramientas', icon: Wrench, label: 'Herramientas' },
   { href: '/precios', icon: Zap, label: 'Premium' },
 ]
 
-export function Sidebar() {
-  const pathname = usePathname()
-  const { data: session } = useSession()
-  const isPremium = session?.user?.plan === 'PREMIUM'
-  const isAdmin = (session?.user as any)?.role === 'ADMIN'
+type Props = {
+  initialSession: Session
+  collapsed: boolean
+  onToggle: () => void
+}
 
-  const initials = session?.user?.name
+export function Sidebar({ initialSession, collapsed, onToggle }: Props) {
+  const pathname = usePathname()
+  const { data: clientSession } = useSession()
+  const session = clientSession ?? initialSession
+  const isPremium = session.user.plan === 'PREMIUM'
+  const isAdmin = session.user.role === 'ADMIN'
+  const initials = session.user.name
     ?.split(' ')
-    .map((n) => n[0])
+    .filter(Boolean)
+    .map((name) => name[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase() ?? 'U'
+    .toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-56 bg-bg-surface border-r border-bg-border flex flex-col z-40">
-      {/* Brand */}
-      <div className="h-[58px] px-5 flex items-center border-b border-bg-border shrink-0">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="font-display font-bold text-tx text-[15px] tracking-tight">Vertex Academic</span>
-          <span className="text-[9px] font-mono font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded uppercase tracking-[0.08em]">
-            Beta
-          </span>
+    <aside className={cn('fixed inset-y-0 left-0 z-40 flex flex-col border-r border-bg-border bg-bg-surface transition-[width] duration-200 ease-out', collapsed ? 'w-16' : 'w-56')}>
+      <div className={cn('flex h-[58px] shrink-0 items-center border-b border-bg-border', collapsed ? 'justify-center px-2' : 'justify-between px-4')}>
+        <Link href="/dashboard" title="Vertex Academic" className="flex min-w-0 items-center gap-2.5">
+          {collapsed ? (
+            <span className="grid h-8 w-8 place-items-center rounded-lg border border-primary/25 bg-primary/10 font-display text-sm font-bold text-primary">V</span>
+          ) : (
+            <>
+              <span className="truncate font-display text-[15px] font-bold tracking-tight text-tx">Vertex Academic</span>
+              <span className="rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-primary">Beta</span>
+            </>
+          )}
         </Link>
+        {!collapsed && <button onClick={onToggle} title="Contraer menú" aria-label="Contraer menú lateral" className="ml-2 rounded-md p-1.5 text-tx-muted hover:bg-bg-elevated hover:text-tx"><ChevronLeft size={15} /></button>}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] font-semibold text-tx-subtle uppercase tracking-[0.1em] px-3 mb-3">
-          Plataforma
-        </p>
+      {collapsed && (
+        <button onClick={onToggle} title="Desplegar menú" aria-label="Desplegar menú lateral" className="absolute -right-3 top-[70px] grid h-6 w-6 place-items-center rounded-full border border-bg-border bg-bg-surface text-tx-muted shadow-md hover:border-primary/40 hover:text-primary">
+          <ChevronRight size={13} />
+        </button>
+      )}
+
+      <nav className={cn('flex-1 space-y-0.5 overflow-y-auto py-4', collapsed ? 'px-2' : 'px-2')}>
+        {!collapsed && <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-tx-subtle">Plataforma</p>}
         {NAV.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
             <Link
               key={href}
               href={href}
+              title={collapsed ? label : undefined}
+              aria-label={label}
               className={cn(
-                'flex items-center gap-2.5 py-2 rounded-md text-[13px] font-medium transition-all border-l-2',
-                active
-                  ? 'border-l-primary text-tx bg-bg-elevated pl-[10px] pr-3'
-                  : 'border-l-transparent text-tx-muted hover:text-tx hover:bg-bg-elevated/50 pl-[10px] pr-3'
+                'flex h-10 items-center rounded-md border-l-2 text-[13px] font-medium transition-all',
+                collapsed ? 'justify-center px-0' : 'gap-2.5 pl-[10px] pr-3',
+                active ? 'border-l-primary bg-bg-elevated text-tx' : 'border-l-transparent text-tx-muted hover:bg-bg-elevated/50 hover:text-tx'
               )}
             >
-              <Icon size={14} strokeWidth={active ? 2.5 : 1.75} className="shrink-0" />
-              <span className="flex-1">{label}</span>
-              {href === '/precios' && !isPremium && (
-                <span className="text-[9px] bg-primary/15 text-primary px-1.5 py-0.5 rounded font-bold tracking-[0.06em] uppercase">
-                  Pro
-                </span>
-              )}
+              <Icon size={collapsed ? 17 : 14} strokeWidth={active ? 2.5 : 1.75} className="shrink-0" />
+              {!collapsed && <span className="flex-1">{label}</span>}
+              {!collapsed && href === '/precios' && !isPremium && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] text-primary">Pro</span>}
+              {collapsed && href === '/precios' && !isPremium && <span className="absolute ml-5 mt-[-18px] h-1.5 w-1.5 rounded-full bg-primary" />}
             </Link>
           )
         })}
       </nav>
 
-      {/* User */}
-      <div className="border-t border-bg-border p-2 space-y-1 shrink-0">
+      <div className="shrink-0 space-y-1 border-t border-bg-border p-2">
         {isPremium && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10 mb-1">
-            <Zap size={11} className="text-primary fill-primary shrink-0" />
-            <span className="text-[11px] text-primary font-semibold tracking-wide">Premium activo</span>
+          <div title="Premium activo" className={cn('flex items-center rounded-md bg-primary/10 text-primary', collapsed ? 'justify-center px-2 py-2.5' : 'gap-2 px-3 py-2')}>
+            <Zap size={12} className="shrink-0 fill-primary" />
+            {!collapsed && <span className="text-[11px] font-semibold tracking-wide">Premium activo</span>}
           </div>
         )}
 
-        <Link
-          href="/perfil"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-bg-elevated transition-colors group"
-        >
-          <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
-            <span className="text-primary text-[10px] font-bold font-display">{initials}</span>
+        <Link href="/perfil" title={collapsed ? (session.user.name || session.user.email || 'Perfil') : undefined} className={cn('group flex items-center rounded-md hover:bg-bg-elevated', collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2')}>
+          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-primary/30 bg-primary/20">
+            <span className="font-display text-[10px] font-bold text-primary">{initials}</span>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="truncate text-tx text-[12px] font-medium group-hover:text-tx transition-colors">
-              {session?.user?.name ?? 'Usuario'}
-            </div>
-            <div className="truncate text-tx-subtle text-[10px]">{session?.user?.email}</div>
-          </div>
+          {!collapsed && <div className="min-w-0 flex-1"><div className="truncate text-[12px] font-medium text-tx">{session.user.name || 'Sin nombre'}</div><div className="truncate text-[10px] text-tx-subtle">{session.user.email}</div></div>}
         </Link>
 
         {isAdmin && (
-          <Link
-            href="/admin"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-warning/80 hover:text-warning hover:bg-warning/8 transition-colors"
-          >
-            <ShieldCheck size={13} className="shrink-0" />
-            <span className="text-[12px] font-semibold">Panel Admin</span>
+          <Link href="/admin" title={collapsed ? 'Panel Admin' : undefined} className={cn('flex items-center rounded-md text-warning/80 transition-colors hover:bg-warning/8 hover:text-warning', collapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2')}>
+            <ShieldCheck size={14} />{!collapsed && <span className="text-[12px] font-semibold">Panel Admin</span>}
           </Link>
         )}
-        <button
-          onClick={() => signOut({ callbackUrl: '/' })}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-tx-subtle hover:text-danger hover:bg-danger/8 transition-all"
-        >
-          <LogOut size={13} className="shrink-0" />
-          <span className="text-[12px]">Cerrar sesión</span>
+        <button onClick={() => signOut({ callbackUrl: '/' })} title={collapsed ? 'Cerrar sesión' : undefined} className={cn('flex w-full items-center rounded-md text-tx-subtle transition-all hover:bg-danger/8 hover:text-danger', collapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2')}>
+          <LogOut size={14} />{!collapsed && <span className="text-[12px]">Cerrar sesión</span>}
         </button>
       </div>
     </aside>

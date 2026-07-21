@@ -52,14 +52,19 @@ export const authOptions: NextAuthOptions = {
         token.planRefreshedAt = Date.now()
       }
 
-      const stale = !token.planRefreshedAt || (Date.now() - (token.planRefreshedAt as number)) > 300_000
-      if (trigger === 'update' || stale) {
+      const stale = !token.planRefreshedAt || (Date.now() - (token.planRefreshedAt as number)) > 60_000
+      const missingIdentity = !token.id || !token.name || !token.email
+      if (trigger === 'update' || stale || missingIdentity) {
         try {
           const dbUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
+            where: token.id ? { id: token.id as string } : { email: token.email as string },
             include: { subscription: true },
           })
           if (dbUser) {
+            token.id = dbUser.id
+            token.name = dbUser.name
+            token.email = dbUser.email
+            token.picture = dbUser.image
             token.plan = dbUser.subscription?.plan ?? 'FREE'
             token.role = dbUser.role
             token.planRefreshedAt = Date.now()
@@ -74,6 +79,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
+        session.user.name = token.name
+        session.user.email = token.email
+        session.user.image = token.picture
         session.user.plan = token.plan as string
         session.user.role = token.role as string
       }

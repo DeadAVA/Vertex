@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env.dev -- next dev",
+    "dev": "node scripts/dev.mjs",
     "build": "dotenv -e .env.prod -- next build",
     "start": "dotenv -e .env.prod -- next start",
     "lint": "next lint",
