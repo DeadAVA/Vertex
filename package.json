@@ -7,10 +7,14 @@
     "build": "dotenv -e .env.prod -- next build",
     "start": "dotenv -e .env.prod -- next start",
     "lint": "next lint",
-    "db:push": "dotenv -e .env.dev -- prisma db push --accept-data-loss",
-    "db:push:prod": "dotenv -e .env.prod -- prisma db push",
+    "db:migrate": "dotenv -e .env.dev -- prisma migrate dev",
+    "db:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
+    "db:status": "dotenv -e .env.dev -- prisma migrate status",
     "db:studio": "dotenv -e .env.dev -- prisma studio",
-    "db:seed": "dotenv -e .env.dev -- tsx prisma/seed.ts"
+    "db:seed": "dotenv -e .env.dev -- tsx prisma/seed.ts",
+    "db:local:up": "docker compose up -d postgres migrate",
+    "db:local:down": "docker compose stop postgres",
+    "db:backup": "powershell -ExecutionPolicy Bypass -File scripts/backup-postgres.ps1"
   },
   "ts-node": {
     "compilerOptions": {
