@@ -62,8 +62,8 @@ Esto puede tardar 1-3 minutos. Al terminar aparece una carpeta `node_modules`.
 El proyecto usa un archivo `.env.dev` para desarrollo. Crea el archivo en la raíz del proyecto con el siguiente contenido (pide los valores reales al dueño del proyecto):
 
 ```
-# Base de datos (Neon PostgreSQL)
-DATABASE_URL="postgresql://..."
+# Base de datos PostgreSQL local
+DATABASE_URL="postgresql://vertex:TU_PASSWORD@localhost:5432/vertex"
 
 # NextAuth
 NEXTAUTH_SECRET="una-cadena-secreta-larga-y-aleatoria"
@@ -89,15 +89,17 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ---
 
-## 6. Sincronizar la base de datos
+## 6. Crear PostgreSQL y aplicar las migraciones
 
-El proyecto usa **Neon** (PostgreSQL en la nube). Con el `DATABASE_URL` correcto en `.env.dev`, ejecuta:
+Configura `POSTGRES_PASSWORD` en `.env` siguiendo
+[`POSTGRES_SELF_HOSTED.md`](POSTGRES_SELF_HOSTED.md). Despues ejecuta:
 
 ```
-npm run db:push
+npm run db:local:up
 ```
 
-Esto crea todas las tablas en la base de datos. Solo se necesita hacer una vez (o cuando cambie el schema).
+Esto inicia PostgreSQL 18 en Docker y crea todas las tablas con las migraciones
+versionadas de Prisma.
 
 ---
 
@@ -127,7 +129,8 @@ Abre el navegador en **http://localhost:3000**
 |---|---|
 | `npm run dev` | Inicia el servidor de desarrollo |
 | `npm run build` | Genera el build de producción |
-| `npm run db:push` | Sincroniza el schema con la base de datos |
+| `npm run db:migrate` | Crea y aplica una migracion de desarrollo |
+| `npm run db:local:up` | Inicia PostgreSQL y aplica las migraciones |
 | `npm run db:seed` | Carga los cursos y contenido inicial |
 | `npm run db:studio` | Abre Prisma Studio (interfaz visual de la BD) |
 
@@ -136,8 +139,8 @@ Abre el navegador en **http://localhost:3000**
 ## Requisitos mínimos
 
 - Node.js 18 o superior
-- Conexión a internet (la base de datos es en la nube con Neon)
-- Las claves de Stripe y la `DATABASE_URL` (pídelas al admin del proyecto)
+- Docker Desktop con Docker Compose v2
+- Las claves de Stripe y las credenciales locales de PostgreSQL
 
 ---
 

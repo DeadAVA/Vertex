@@ -1,4 +1,35 @@
 services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: vertex-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vertex}
+      POSTGRES_USER: ${POSTGRES_USER:-vertex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vertex} -d ${POSTGRES_DB:-vertex}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    image: vertex-platform-migrator:latest
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vertex}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-vertex}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   app:
     build:
       context: .
@@ -11,9 +42,15 @@ services:
     env_file:
       - .env.prod
     environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vertex}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-vertex}
       OLLAMA_URL: http://host.docker.internal:11434
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   cloudflared:
@@ -21,6 +58,10 @@ services:
     container_name: vertex-cloudflared
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
-      - app
+      app:
+        condition: service_started
     restart: unless-stopped
     network_mode: "host"
+
+volumes:
+  postgres_data:

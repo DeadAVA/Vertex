@@ -8,6 +8,11 @@ COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci
 
+FROM deps AS migrator
+WORKDIR /app
+COPY prisma ./prisma/
+CMD ["npx", "prisma", "migrate", "deploy"]
+
 # ─── Stage 2: Build ────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
